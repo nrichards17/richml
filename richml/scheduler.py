@@ -39,6 +39,7 @@ class CosineRestartsLR(_LRScheduler):
         # includes the max epochs at the end
         self.restart_points = np.cumsum(period_list)
 
+        # initialize after setting params, b/c get_lr is called
         super(CosineRestartsLR, self).__init__(optimizer, last_epoch)
 
     def _calculate_lr(self, epoch):
@@ -61,30 +62,39 @@ class CosineRestartsLR(_LRScheduler):
 
 
 class OneCycleLR(_LRScheduler):
-    def __init__(self, optimizer, max_epochs=200, eta_min=None, eta_max=0.01, end_ratio=0.2,
-                 min_frac=None, last_epoch=-1):
+    """
+    Implementing 1-Cycle policy
 
-        if (min_frac is not None) and (eta_min is not None):
-            raise Exception("Cannot define eta_min and min_frac simultaneously")
-        elif min_frac is not None:
-            self.eta_min = min_frac * eta_max
-        elif eta_min is not None:
-            self.eta_min = eta_min
-        else:
-            self.eta_min = 0.0  # default
+    Args:
+        optimizer (Optimizer): Wrapped optimizer.
+        max_epochs (int): Maximum number of iterations.
+        eta_min (float): Minimum learning rate. Default: 1e-5
+        eta_max (float): Maximum learning rate - overwrites optimizer LR. Default: 0.001
+        epsilon (float): Final LR value in end phase. Default: 0.0
+        end_ratio (float): Ratio of
+    """
 
+    def __init__(self, optimizer, max_epochs, eta_min=1e-5, eta_max=0.001,
+                 epsilon=0.0, end_ratio=0.1, last_epoch=-1):
+        self.eta_min = eta_min
         self.eta_max = eta_max
-        self.epsilon = 0.0
+        self.epsilon = epsilon
+        if end_ratio < 0 or end_ratio > 1:
+            raise ValueError('End ratio must be: 0 < x < 1')
+        self.end_ratio = end_ratio
 
         self.max_epochs = max_epochs
         self.x3 = max_epochs
-        self.x2 = int((1 - end_ratio) * max_epochs)
-        self.x1 = int(self.x2 / 2)
+        self.x2 = (1.0 - self.end_ratio) * self.max_epochs
+        self.x1 = self.x2 / 2.0
 
         # initialize after setting params, b/c get_lr is called
         super(OneCycleLR, self).__init__(optimizer, last_epoch)
 
-    def calculate_lr(self, epoch):
+    def _calculate_lr(self, epoch):
+        """
+        Calculates LR with linear segments based on three epoch points: x1, x2, x3
+        """
         if epoch < self.x1:
             lr = ((self.eta_max - self.eta_min) / self.x1) * epoch + self.eta_min
         elif epoch < self.x2:
@@ -96,7 +106,4 @@ class OneCycleLR(_LRScheduler):
         return lr
 
     def get_lr(self):
-        """
-        also accepts epoch input
-        """
-        return [self.calculate_lr(self.last_epoch) for _ in self.base_lrs]
+        return [self._calculate_lr(self.last_epoch) for _ in self.base_lrs]
