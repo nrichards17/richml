@@ -60,6 +60,17 @@ class CosineRestartsLR(_LRScheduler):
     def get_lr(self):
         return [self._calculate_lr(self.last_epoch) for _ in self.base_lrs]
 
+    @property
+    def params(self):
+        return {
+            'max_epochs': self.max_epochs,
+            'num_restarts': self.num_restarts,
+            'eta_min': self.eta_min,
+            'eta_max': self.eta_max,
+            'amplitude_ratio': self.amplitude_ratio,
+            'period_multiplier': self.period_multiplier
+        }
+
 
 class OneCycleLR(_LRScheduler):
     """
@@ -81,11 +92,11 @@ class OneCycleLR(_LRScheduler):
         self.epsilon = epsilon
         if end_fraction < 0 or end_fraction > 1:
             raise ValueError('End ratio must be: 0 < x < 1')
-        self.end_ratio = end_fraction
+        self.end_fraction = end_fraction
 
         self.max_epochs = max_epochs
         self.x3 = max_epochs
-        self.x2 = (1.0 - self.end_ratio) * self.max_epochs
+        self.x2 = (1.0 - self.end_fraction) * self.max_epochs
         self.x1 = self.x2 / 2.0
 
         # initialize after setting params, b/c get_lr is called
@@ -107,6 +118,16 @@ class OneCycleLR(_LRScheduler):
 
     def get_lr(self):
         return [self._calculate_lr(self.last_epoch) for _ in self.base_lrs]
+
+    @property
+    def params(self):
+        return {
+            'max_epochs': self.max_epochs,
+            'eta_min': self.eta_min,
+            'eta_max': self.eta_max,
+            'epsilon': self.epsilon,
+            'end_fraction': self.end_fraction
+        }
 
 
 class CycleRestartsLR(_LRScheduler):
@@ -164,3 +185,15 @@ class CycleRestartsLR(_LRScheduler):
 
     def get_lr(self):
         return [self._calculate_lr(self.last_epoch) for _ in self.base_lrs]
+
+    @property
+    def params(self):
+        return {
+            'max_epochs': self.max_epochs,
+            'num_restarts': self.num_restarts,
+            'eta_min': self.eta_min,
+            'eta_max': self.eta_max,
+            'amplitude_ratio': self.amplitude_ratio,
+            'period_multiplier': self.period_multiplier,
+            'center_shift': self.center_shift
+        }
