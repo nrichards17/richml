@@ -25,4 +25,8 @@ def plot_scheduler(scheduler):
     epochs = np.arange(scheduler.max_epochs)
 
     plt.plot(epochs, lr_history)
+    plt.xlabel('Epoch')
+    plt.ylabel('Learning Rate')
+    plt.title('Example: {}'.format(scheduler.__class__.__name__))
+
     plt.show()
