@@ -16,22 +16,33 @@ class FakeNet(torch.nn.Module):
         return x
 
 
-def plot_scheduler(scheduler):
+def plot_scheduler(scheduler, show=True):
     lr_history = []
     for epoch in range(scheduler.max_epochs):
         scheduler.step(epoch)
         lr = scheduler.get_lr()[0]
         lr_history.append(lr)
 
+    fig, ax = plt.subplots(1, 1)
     lr_history = np.array(lr_history)
     epochs = np.arange(scheduler.max_epochs)
+    ax.plot(epochs, lr_history)
+    ax.set_xlabel('Epoch')
+    ax.set_ylabel('Learning Rate')
+    ax.set_title('Example: {}'.format(scheduler.__class__.__name__))
 
-    plt.plot(epochs, lr_history)
-    plt.xlabel('Epoch')
-    plt.ylabel('Learning Rate')
-    plt.title('Example: {}'.format(scheduler.__class__.__name__))
+    # plot scheduler arguments/params on figure if available
+    if hasattr(scheduler, 'params'):
+        params = scheduler.params
+        y_loc, x_loc, y_step = 0.95, 0.6, 0.06
+        for name, value in params.items():
+            plt.text(x_loc, y_loc, f'{name}: {value}', transform=ax.transAxes, fontsize=12)
+            y_loc -= y_step
 
-    plt.show()
+    if show:
+        plt.show()
+
+    return fig, ax
 
 
 if __name__ == '__main__':
@@ -41,24 +52,25 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Plot richml scheduler examples.')
     parser.add_argument('--scheduler', metavar='SCHEDULER',
                         choices=choices,
-                        help='choose of the schedulers: { %(choices)s }',
+                        help='choose one of the schedulers: { %(choices)s }',
                         default='cosine_restarts')
     args = parser.parse_args()
 
+    # create network and optimizer required by PyTorch schedulers
     network = FakeNet()
     optimizer = torch.optim.Adam(network.parameters())
 
-    if args.scheduler == 'cosine_restarts':
+    if args.scheduler == choices[0]:
         scheduler = CosineRestartsLR(
             optimizer,
             max_epochs=1000,
-            num_restarts=10,
+            num_restarts=3,
             eta_min=0.001,
             eta_max=0.01,
-            amplitude_ratio=0.9,
-            period_multiplier=1.0,
+            amplitude_ratio=0.5,
+            period_multiplier=1.5,
         )
-    elif args.scheduler == 'one_cycle':
+    elif args.scheduler == choices[1]:
         scheduler = OneCycleLR(
             optimizer,
             max_epochs=1000,
@@ -67,7 +79,7 @@ if __name__ == '__main__':
             epsilon=0.0,
             end_fraction=0.2
         )
-    elif args.scheduler == 'cycle_restarts':
+    elif args.scheduler == choices[2]:
         scheduler = CycleRestartsLR(
             optimizer,
             max_epochs=1000,
@@ -81,4 +93,4 @@ if __name__ == '__main__':
     else:
         pass
 
-    plot_scheduler(scheduler)
+    _,_ = plot_scheduler(scheduler)
