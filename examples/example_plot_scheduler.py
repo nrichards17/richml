@@ -64,10 +64,10 @@ if __name__ == '__main__':
         scheduler = CosineRestartsLR(
             optimizer,
             max_epochs=1000,
-            num_restarts=3,
+            num_restarts=2,
             eta_min=0.001,
             eta_max=0.01,
-            amplitude_ratio=0.5,
+            amplitude_ratio=0.8,
             period_multiplier=1.5,
         )
     elif args.scheduler == choices[1]:
@@ -83,12 +83,12 @@ if __name__ == '__main__':
         scheduler = CycleRestartsLR(
             optimizer,
             max_epochs=1000,
-            num_restarts=10,
+            num_restarts=5,
             eta_min=0.001,
             eta_max=0.01,
-            amplitude_ratio=0.9,
+            amplitude_ratio=0.8,
             period_multiplier=1.0,
-            center_shift=0.8,
+            center_shift=0.5,
         )
     else:
         pass
