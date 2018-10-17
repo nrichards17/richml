@@ -2,9 +2,13 @@ richml
 ======
 
 <div class="row">
-<img src="https://github.com/nrichards17/richml/raw/master/examples/fig_cosine_restarts.png" height="200" width="300">
-<img src="https://github.com/nrichards17/richml/raw/master/examples/fig_one_cycle.png" height="200" width="300">
-<img src="https://github.com/nrichards17/richml/raw/master/examples/fig_cycle_restarts.png" height="200" width="300">
+   
+<img src="https://github.com/nrichards17/richml/raw/master/examples/fig_cosine_restarts.png" height="200" width="275">
+   
+<img src="https://github.com/nrichards17/richml/raw/master/examples/fig_one_cycle.png" height="200" width="275">
+
+<img src="https://github.com/nrichards17/richml/raw/master/examples/fig_cycle_restarts.png" height="200" width="275">
+
 </div>
 
 -------------------
